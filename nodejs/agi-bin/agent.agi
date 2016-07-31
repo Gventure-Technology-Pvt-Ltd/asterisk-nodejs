@@ -1,0 +1,18 @@
+#!/usr/bin/php
+<?php
+if (function_exists('pcntl_signal')) {
+    pcntl_signal(SIGHUP, SIG_IGN);
+}
+require_once("call/phpagi.php");
+require_once("call/call.php");
+error_reporting(E_ALL);
+$myconfig=array(
+        "error_handler"=>"true"
+);
+//$agi=new AGI("/etc/asterisk/phpagi.conf",$myconfig);
+$agi=new AGI();
+$call= new CallerID($agi);
+
+$agent=$call->AddDisposition($agi->request["agi_uniqueid"], $agi->request["agi_channel"]);
+exit();
+?>

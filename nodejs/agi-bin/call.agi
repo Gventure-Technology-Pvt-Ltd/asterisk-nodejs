@@ -1,0 +1,32 @@
+#!/usr/bin/php
+<?php
+if (function_exists('pcntl_signal')) {
+    pcntl_signal(SIGHUP, SIG_IGN);
+}
+require_once("call/phpagi.php");
+require_once("call/call.php");
+error_reporting(E_ALL);
+$myconfig=array(
+        "error_handler"=>"true"
+);
+//$agi=new AGI("/etc/asterisk/phpagi.conf",$myconfig);
+$agi=new AGI();
+$agi->exec("Ringing");
+$agi->exec("Wait","2");
+$agi->Answer();
+$call= new CallerID($agi);
+$ph=$agi->request["agi_callerid"];
+if($ph=='cust')
+	$ph=$call->makeLead();
+$lead=$call->GetLead($ph);
+$qu=$call->GetQueue();
+$agi->exec("Set", "CALLERID(num)=".$ph."-".$agi->request["agi_extension"]."-".$lead."-".$qu["id"]."-".$qu["queue"]);
+$agi->exec("SIPAddHeader", "Call-Info:<sip:>\;answer-after=1");
+//$agi->exec("Set", "MONITOR_FILENAME=/var/spool/asterisk/monitor/".$qu["queue"]."\${EXTEN}-\${STRFTIME(\${EPOCH},,%Y%m%d-%H%M%S)}-\${UNIQUEID}");
+$agi->exec("Set", "MONITOR_FILENAME=/var/spool/asterisk/monitor/".$qu["queue"]."-".$lead."-".$agi->request["agi_extension"]."-".$ph."-".time());
+$agi->exec("Queue", $qu["queue"].",,,,,agent.agi");
+
+$agent=$call->GetAgent($agi->request["agi_uniqueid"]);
+$agi->exec("PauseQueueMember",",".$agent);
+exit();
+?>

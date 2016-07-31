@@ -1,0 +1,105 @@
+<script src="socket.io.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+<script>
+	var socket = io.connect('http://72.249.184.200:8000');
+	// on connection to server, ask for user's name with an anonymous callback
+	socket.on('connect', function(){
+		// call the server-side function 'adduser' and send one parameter (value of prompt)
+		socket.emit('adduser', prompt("What's your sip user?"));
+	});
+	// listener, whenever the server emits 'updatechat', this updates the chat body
+	socket.on('updatechat', function (username, data) {
+		$('#conversation').append('<b>'+username + ':</b> ' + data + '<br>');
+	});
+	// listener, whenever the server emits 'updaterooms', this updates the room the client is in
+	socket.on('crm', function(data) {
+		function populate(frm, data) {
+			$.each(data, function(key, value){
+				$('[name='+key+']', frm).val(value);
+			});
+		}				
+		populate('#prev_form', $.parseJSON(data));
+	});
+	
+	// on load of page
+	$(function(){
+		// when the client clicks pause
+		$('#pause').click( function() {
+			socket.emit('pause');
+		});
+		// when the client clicks ready
+		$('#ready').click( function() {
+			socket.emit('ready');
+		});
+		// when the client clicks hangup
+		$('#hangup').click( function() {
+			socket.emit('hangup', $('#channel').val());
+		});
+		// when the client hits ENTER on their keyboard
+		/*$('#data').keypress(function(e) {
+			if(e.which == 13) {
+				$(this).blur();
+				$('#datasend').focus().click();
+			}
+		});*/
+	});
+</script>
+<link id="bootstrap-style" href="fullscreen.css" rel="stylesheet"/>
+<div id="sipuser"></div>
+<input type="button" id="pause" value="Pause"/>
+<input type="button" id="ready" value="Ready"/>
+<input type="button" id="hangup" value="Hangup"/>
+
+<div style="float:left;width:300px;height:250px;overflow:scroll-y;padding:10px;">
+	<div id="conversation"></div>
+</div>
+
+<div class="col-sm-6 crmcol" id="customer">
+<form id="prev_form" action="index.php" method="post" class="form-style-9" role="">
+<fieldset id="prev_form_c3fc57e1d7c5cc5acb1536845b44061b">
+	<legend>Customer Details</legend>
+
+  <ul>
+    <li><input type="text" name="channel" id="channel" class="field-style field-split align-left" onblur="" value="" placeholder="Channel" style="width:33%;" readonly=true/></li>
+    <li><input type="text" name="title" id="title"class="field-style field-split align-left" onblur="" value="" placeholder="Title" style="width:33%;"/>
+</li>
+    <li><input type="text" name="first_name" id="first_name"class="field-style field-split align-left" onblur="" value="" placeholder="First Name" style="width:33%;"/>
+
+        <input type="text" name="middle_initial" id="middle_initial"class="field-style field-split" onblur="" value="" placeholder="Middle Initial" style="width:32%;position:relative;left:1%;"/>
+
+        <input type="text" name="last_name" id="last_name"class="field-style field-full align-right" onblur="" value="" placeholder="Last Name" style="width:33%;"/>
+</li>
+    <li><input type="text" name="address1" id="address1"class="field-style field-split align-left" onblur="" value="" placeholder="Address Line 1" style=""/>
+
+        <input type="text" name="address2" id="address2"class="field-style field-split align-right" onblur="" value="" placeholder="Address Line 2" style=""/>
+</li>
+    <li><input type="text" name="donation" id="donation"class="field-style field-full align-none" onblur="" value="" placeholder="Amount of Donation" style=""/>
+</li>
+    <li><input type="text" name="city" id="city"class="field-style field-split align-left" onblur="" value="" placeholder="City" style="width:33%;"/>
+
+        <input type="text" name="state" id="state"class="field-style field-split" onblur="" value="" placeholder="State" style="width:32%;position:relative;left:1%;"/>
+
+        <input type="text" name="postal_code" id="postal_code"class="field-style field-split align-right" onblur="" value="" placeholder="Postal Code" style="width:33%;"/>
+</li>
+    <li><input type="text" name="phone_number" id="phone_number"class="field-style field-split align-left" onblur="" value="" placeholder="Phone Number" style=""/>
+
+        <input type="text" name="alt_phone" id="alt_phone"class="field-style field-split align-right" onblur="" value="" placeholder="Alt. Phone" style=""/>
+</li>
+    <li><input type="text" name="email" id="email"class="field-style field-split align-left" onblur="" value="" placeholder="Email" style=""/>
+
+        <input type="text" name="security_phrase" id="security_phrase"class="field-style field-split align-right" onblur="" value="" placeholder="Show" style=""/>
+</li>
+    <li><select name="gender" id="gender" class="field-style field-split align-left" style="">
+	<option value="-1">Select One</option>
+	<option value="U">Undefined</option>
+	<option value="M">Male</option>
+	<option value="F">Female</option>
+</select>
+        <input type="text" name="province" id="province"class="field-style field-split align-right" onblur="" value="" placeholder="Province" style=""/>
+</li>
+    <li><textarea name="comments" id="comments"placeholder="Comment" style=""></textarea>
+</li>
+  </ul>
+</fieldset>
+</form>
+</div>
